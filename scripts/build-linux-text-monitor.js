@@ -113,7 +113,10 @@ function getPkgConfigFlags() {
     });
     if (check.status !== 0) return null;
 
-    const result = spawnSync("pkg-config", ["--cflags", "--libs", "atspi-2"], {
+    // text-monitor.c calls g_object_* (gobject). atspi-2.pc doesn't always pull
+    // in gobject-2.0, so request it explicitly — otherwise strict linkers
+    // fail with "DSO missing: libgobject".
+    const result = spawnSync("pkg-config", ["--cflags", "--libs", "atspi-2", "gobject-2.0"], {
       stdio: ["pipe", "pipe", "pipe"],
       env: process.env,
     });

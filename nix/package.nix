@@ -6,11 +6,11 @@
 
 let
   pname = "openwhispr";
-  version = "1.7.2";
+  version = "1.7.3-wfdbus";
 
   src = fetchurl {
-    url = "https://github.com/OpenWhispr/openwhispr/releases/download/v${version}/OpenWhispr-${version}-linux-x86_64.AppImage";
-    hash = "sha256-EPJTZFtd2bQ026KNcI/FOHfoAMu96HKfJxTPceTc5jw=";
+    url = "https://github.com/sochotnicky/openwhispr/releases/download/v${version}/OpenWhispr-${version}-linux-x86_64.AppImage";
+    hash = "sha256-OE8E+vnUxjciQ/nDwUTS3xB0DsmZUSeRTXjkhx4wm9I=";
   };
 
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
@@ -52,7 +52,7 @@ appimageTools.wrapType2 {
   meta = {
     description = "Privacy-first desktop voice dictation, meeting transcription & notes";
     homepage = "https://openwhispr.com/";
-    changelog = "https://github.com/OpenWhispr/openwhispr/releases/tag/v${version}";
+    changelog = "https://github.com/sochotnicky/openwhispr/releases/tag/v${version}";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];
