@@ -882,11 +882,19 @@ async function startApp() {
     }
   }
 
-  // Set up meeting mode hotkey
+  // Set up meeting mode hotkey — a true toggle: start a meeting if idle, stop
+  // the active one otherwise. Stop is renderer-driven, so we just request it and
+  // optimistically clear the flag (so a fast second press doesn't double-fire).
   const meetingHotkeyCallback = () => {
     if (hotkeyManager.isInListeningMode()) return;
-    debugLogger.info("Meeting hotkey triggered", {}, "meeting");
-    meetingDetectionEngine?.startManualMeeting();
+    if (meetingDetectionEngine?.isMeetingModeActive()) {
+      debugLogger.info("Meeting hotkey triggered — stopping active meeting", {}, "meeting");
+      meetingDetectionEngine.setMeetingModeActive(false);
+      windowManager.sendStopMeeting();
+    } else {
+      debugLogger.info("Meeting hotkey triggered — starting meeting", {}, "meeting");
+      meetingDetectionEngine?.startManualMeeting();
+    }
   };
 
   const savedMeetingKey = environmentManager.getMeetingKey?.() || "";

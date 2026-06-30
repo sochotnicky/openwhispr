@@ -380,6 +380,10 @@ class MeetingDetectionEngine {
     }
   }
 
+  isMeetingModeActive() {
+    return this._meetingModeActive;
+  }
+
   setUserRecording(active) {
     this._userRecording = active;
     this.audioActivityDetector.setUserRecording(active);

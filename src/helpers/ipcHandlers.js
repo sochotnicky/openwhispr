@@ -5604,6 +5604,9 @@ class IPCHandlers {
 
     ipcMain.handle("meeting-transcription-stop", async () => {
       this.meetingDetectionEngine?.setUserRecording(false);
+      // Keep the toggle signal accurate regardless of how the stop was triggered
+      // (UI pill, ToggleMeeting hotkey/D-Bus, etc.).
+      this.meetingDetectionEngine?.setMeetingModeActive(false);
       try {
         if (this.audioTapManager) {
           await this.audioTapManager.stop();

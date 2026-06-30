@@ -22,6 +22,7 @@ import {
 } from "../stores/transcriptionStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import {
+  stopRecording,
   useIsMeetingMode,
   useIsNarrowWindow,
   useMeetingRecordingStore,
@@ -335,6 +336,17 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     };
     drain();
     const cleanup = window.electronAPI?.onMeetingNoteNavigationPending?.(drain);
+    return () => cleanup?.();
+  }, []);
+
+  // ToggleMeeting (hotkey/D-Bus) requests a stop when a meeting is recording.
+  // Recording lives here in the renderer, so the main process can only ask.
+  useEffect(() => {
+    const cleanup = window.electronAPI?.onMeetingRecordingStopRequested?.(() => {
+      if (useMeetingRecordingStore.getState().isRecording) {
+        void stopRecording();
+      }
+    });
     return () => cleanup?.();
   }, []);
 

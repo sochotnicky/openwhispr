@@ -1348,6 +1348,13 @@ class WindowManager {
     return payload;
   }
 
+  // Ask the control panel renderer to stop the active meeting recording. The
+  // recording lifecycle lives in the renderer (meetingRecordingStore), so the
+  // main process can only request the stop. Used by the ToggleMeeting toggle.
+  sendStopMeeting() {
+    this.sendToControlPanel("meeting-recording-stop-requested");
+  }
+
   snapControlPanelToMeetingMode() {
     const win = this.controlPanelWindow;
     if (!win || win.isDestroyed()) return;
