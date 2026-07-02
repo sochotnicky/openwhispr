@@ -60,6 +60,30 @@ class TrayManager {
     });
   }
 
+  // Tray-icon click handler: toggle the control panel. If it's currently
+  // visible, hide it; otherwise show it (creating it if needed) on the current
+  // workspace. On Linux with multiple workspaces a window living on another
+  // workspace still reports as visible, so the first click hides it and the
+  // next re-shows it on the current workspace — worst case two clicks to pull
+  // it over, which is better than it staying stuck out of sight.
+  async toggleControlPanelFromTray() {
+    if (this.windowManager) {
+      this.controlPanelWindow = this.windowManager.controlPanelWindow || this.controlPanelWindow;
+    }
+
+    const win = this.controlPanelWindow;
+    if (win && !win.isDestroyed() && win.isVisible() && !win.isMinimized()) {
+      if (this.windowManager) {
+        this.windowManager.hideControlPanelToTray();
+      } else {
+        win.hide();
+      }
+      return;
+    }
+
+    await this.showControlPanelFromTray();
+  }
+
   async showControlPanelFromTray() {
     try {
       if (this.windowManager) {
@@ -277,7 +301,7 @@ class TrayManager {
 
     if (process.platform !== "darwin") {
       this.tray.on("click", () => {
-        void this.showControlPanelFromTray();
+        void this.toggleControlPanelFromTray();
       });
     }
 
