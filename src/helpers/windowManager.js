@@ -4,6 +4,7 @@ const HotkeyManager = require("./hotkeyManager");
 const { isGlobeLikeHotkey } = HotkeyManager;
 const DragManager = require("./dragManager");
 const MenuManager = require("./menuManager");
+const ZoomManager = require("./zoomManager");
 const DevServerManager = require("./devServerManager");
 const { i18nMain } = require("./i18nMain");
 const { DEV_SERVER_PORT } = DevServerManager;
@@ -37,6 +38,7 @@ class WindowManager {
     this.tray = null;
     this.hotkeyManager = new HotkeyManager();
     this.dragManager = new DragManager();
+    this.zoomManager = new ZoomManager();
     this.isQuitting = false;
     this.loadErrorShown = false;
     this.macCompoundPushState = null;
@@ -70,6 +72,7 @@ class WindowManager {
 
     this.setMainWindowInteractivity(false);
     this.registerMainWindowEvents();
+    this.zoomManager.register(this.mainWindow.webContents);
 
     // Register load event handlers BEFORE loading to catch all events
     this.mainWindow.webContents.on(
@@ -600,6 +603,7 @@ class WindowManager {
     }
 
     this.controlPanelWindow = new BrowserWindow(CONTROL_PANEL_CONFIG);
+    this.zoomManager.register(this.controlPanelWindow.webContents);
 
     this.controlPanelWindow.webContents.on("will-navigate", (event, url) => {
       const appUrl = DevServerManager.getAppUrl(true);
@@ -664,7 +668,11 @@ class WindowManager {
       this.controlPanelWindow = null;
     });
 
-    MenuManager.setupControlPanelMenu(this.controlPanelWindow, () => this.openSettings());
+    MenuManager.setupControlPanelMenu(
+      this.controlPanelWindow,
+      () => this.openSettings(),
+      (window, direction) => this.zoomManager.applyZoomCommand(window, direction)
+    );
 
     this.controlPanelWindow.webContents.on("did-finish-load", () => {
       clearVisibilityTimer();
@@ -719,6 +727,7 @@ class WindowManager {
     }
 
     this.agentWindow = new BrowserWindow(AGENT_OVERLAY_CONFIG);
+    this.zoomManager.register(this.agentWindow.webContents);
 
     this.agentWindow.once("ready-to-show", () => {
       WindowPositionUtil.setupAlwaysOnTop(this.agentWindow);
@@ -797,6 +806,7 @@ class WindowManager {
     }
 
     this.transcriptionPreviewWindow = new BrowserWindow(TRANSCRIPTION_PREVIEW_CONFIG);
+    this.zoomManager.register(this.transcriptionPreviewWindow.webContents);
 
     this.transcriptionPreviewWindow.on("closed", () => {
       this.transcriptionPreviewWindow = null;
@@ -1159,6 +1169,7 @@ class WindowManager {
       ...NOTIFICATION_WINDOW_CONFIG,
       ...position,
     });
+    this.zoomManager.register(this.notificationWindow.webContents);
 
     if (process.platform === "darwin") {
       this.notificationWindow.setIgnoreMouseEvents(true, { forward: true });
@@ -1253,6 +1264,7 @@ class WindowManager {
       ...NOTIFICATION_WINDOW_CONFIG,
       ...position,
     });
+    this.zoomManager.register(this.updateNotificationWindow.webContents);
 
     WindowPositionUtil.setupAlwaysOnTop(this.updateNotificationWindow);
 
@@ -1388,7 +1400,11 @@ class WindowManager {
     MenuManager.setupMainMenu(() => this.openSettings());
 
     if (this.controlPanelWindow && !this.controlPanelWindow.isDestroyed()) {
-      MenuManager.setupControlPanelMenu(this.controlPanelWindow, () => this.openSettings());
+      MenuManager.setupControlPanelMenu(
+        this.controlPanelWindow,
+        () => this.openSettings(),
+        (window, direction) => this.zoomManager.applyZoomCommand(window, direction)
+      );
       this.controlPanelWindow.setTitle(i18nMain.t("window.controlPanelTitle"));
     }
 
