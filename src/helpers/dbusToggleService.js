@@ -27,7 +27,9 @@ function getDBus() {
 
 // Owns the com.openwhispr.App session-bus service and its no-arg methods.
 // Toggle/ToggleAgent/ToggleMeeting/ToggleVoiceAgent are momentary (tap-to-toggle)
-// for compositors that only fire on key press.
+// for compositors that only fire on key press. StartDictation/StopDictation are a
+// press/release pair for push-to-talk: bind key-press → StartDictation and
+// key-release → StopDictation (e.g. Sway `bindsym` + `bindsym --release`).
 // Compositor-agnostic: the GNOME integration and the auto-enabled endpoint on
 // wlroots Wayland (e.g. Sway) both route key events to these via dbus-send.
 // Callbacks may be supplied up front to start() or attached later via the setters;
@@ -40,6 +42,8 @@ class DBusToggleService {
       agent: null,
       meeting: null,
       voiceAgent: null,
+      startDictation: null,
+      stopDictation: null,
     };
   }
 
@@ -109,6 +113,13 @@ class DBusToggleService {
       ToggleVoiceAgent: () => {
         if (this._callbacks.voiceAgent) this._callbacks.voiceAgent();
       },
+      // Push-to-talk: bind key-press → StartDictation, key-release → StopDictation.
+      StartDictation: () => {
+        if (this._callbacks.startDictation) this._callbacks.startDictation();
+      },
+      StopDictation: () => {
+        if (this._callbacks.stopDictation) this._callbacks.stopDictation();
+      },
     };
   }
 
@@ -120,6 +131,8 @@ class DBusToggleService {
         ToggleAgent: ["", ""],
         ToggleMeeting: ["", ""],
         ToggleVoiceAgent: ["", ""],
+        StartDictation: ["", ""],
+        StopDictation: ["", ""],
       },
     };
   }
@@ -138,6 +151,14 @@ class DBusToggleService {
 
   setVoiceAgentCallback(callback) {
     this._callbacks.voiceAgent = callback || null;
+  }
+
+  setStartDictationCallback(callback) {
+    this._callbacks.startDictation = callback || null;
+  }
+
+  setStopDictationCallback(callback) {
+    this._callbacks.stopDictation = callback || null;
   }
 
   close() {
