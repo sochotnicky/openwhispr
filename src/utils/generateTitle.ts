@@ -1,6 +1,8 @@
 import reasoningService from "../services/ReasoningService";
 import type { ReasoningConfig } from "../services/BaseReasoningService";
 import { getSettings } from "../stores/settingsStore";
+import { extractTitle } from "../helpers/extractTitle.js";
+import logger from "./logger";
 
 const TITLE_SYSTEM_PROMPT =
   "Generate a concise 3-8 word title for these notes. Return ONLY the title text, nothing else — no quotes, no prefix, no explanation.";
@@ -17,9 +19,15 @@ export async function generateNoteTitle(
       disableThinking: getSettings().noteFormattingDisableThinking,
       ...config,
     });
-    const cleaned = raw.trim().replace(/^["']|["']$/g, "");
-    return cleaned.length > 0 && cleaned.length < 100 ? cleaned : "";
-  } catch {
+    const title = extractTitle(raw);
+    logger.info(
+      "Generated note title",
+      { rawLength: raw?.length ?? 0, rawPreview: raw?.slice(0, 120), title, accepted: !!title },
+      "notes"
+    );
+    return title;
+  } catch (err) {
+    logger.warn("Note title generation failed", { error: (err as Error).message }, "notes");
     return "";
   }
 }
