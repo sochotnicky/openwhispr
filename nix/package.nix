@@ -10,7 +10,7 @@ let
 
   src = fetchurl {
     url = "https://github.com/sochotnicky/openwhispr/releases/download/v${version}/OpenWhispr-${version}-linux-x86_64.AppImage";
-    hash = "sha256-t7OSS19qxheH5KAxOygrxpYtl0VTVY038HqcRiLtObI=";
+    hash = "sha256-3wQA+0494czQTtPTrCRXkQSJvKSfc0bU6+ob5BoxHDc=";
   };
 
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
